@@ -75,6 +75,13 @@ subforms. For example::
             ('user', 'email'),
         )
 
+An implementation of the attribute :attr:`~MultiForm.base_fields` is provided,
+but the keys are a combination of the subform keys and the field names rather
+than just the field names. The reason an implemention is provided at all, given
+it is merely an approximation, is interoperability with ``WizardView``, which
+introspects the values of :attr:`~MultiForm.base_fields`.  See
+:ref:`wizardview_guide`.
+
 
 Working with ModelForms
 -----------------------
@@ -227,23 +234,19 @@ user/profile example, it would look something like this::
             })
             return kwargs
 
+.. _wizardview_guide:
 
 Working with WizardView
 -----------------------
 
 :class:`MultiForms <MultiForm>` also support the ``WizardView`` classes
-provided by django-formtools_ (or Django before 1.8), however you must set a
-``base_fields`` attribute on your form class. ::
+provided by django-formtools_ (or Django before 1.8). So for example ::
 
     # forms.py
     from django import forms
     from betterforms.multiform import MultiForm
 
     class Step1Form(MultiModelForm):
-        # We have to set base_fields to a dictionary because the WizardView
-        # tries to introspect it.
-        base_fields = {}
-
         form_classes = {
             'user': UserEditForm,
             'profile': UserProfileForm,
@@ -268,18 +271,7 @@ Then you can use it like normal. ::
 
     wizard_view = MyWizardView.as_view([Step1Form, Step2Form])
 
-The reason we have to set ``base_fields`` to a dictionary is that the
-``WizardView`` does some introspection to determine if any of the forms accept
-files and then it makes sure that the ``WizardView`` has a ``file_storage`` on
-it. By setting ``base_fields`` to an empty dictionary, we can bypass this check.
-
-.. warning::
-
-    If you have have any forms that accept Files, you must configure the
-    ``file_storage`` attribute for your WizardView.
-
 .. _django-formtools: http://django-formtools.readthedocs.org/en/latest/wizard.html
-
 
 API Reference
 -------------
@@ -354,6 +346,8 @@ API Reference
     .. attribute:: media
 
     .. attribute:: is_bound
+
+    .. attribute:: base_fields
 
     .. attribute:: cleaned_data
 

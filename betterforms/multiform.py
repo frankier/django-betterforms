@@ -19,6 +19,14 @@ from django.utils.six.moves import reduce
 from django.utils.six import string_types
 
 
+class classproperty(property):
+    """
+    Subclass property to make classmethod properties possible
+    """
+    def __get__(self, cls, owner):
+        return self.fget.__get__(None, owner)()
+
+
 @python_2_unicode_compatible
 class WhitelistedBaseForm(object):
     """
@@ -165,6 +173,15 @@ class MultiForm(WhitelistedBaseForm):
             (key, form.cleaned_data)
             for key, form in self.forms.items()
         )
+
+    @classproperty
+    @classmethod
+    def base_fields(cls):
+        all_base_fields = OrderedDict()
+        for key, form_cls in cls.form_classes.items():
+            for name, field in form_cls.base_fields.items():
+                all_base_fields[(key, name)] = field
+        return all_base_fields
 
 
 class MultiModelForm(MultiForm):
